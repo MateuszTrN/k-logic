@@ -87,9 +87,9 @@ const withLogic = ({reducer, saga}) => BaseComponent => {
         getCurrentScope() {
             return [
                 ...(this.context.kScope ? this.context.kScope.scope : []),
-                this.props.scope != null
-                    ? '' + this.props.scope
-                    : 'defaultScope',
+                ...(this.props.scope != null
+                    ? ('' + this.props.scope).split('.')
+                    : ['defaultScope']),
             ];
         }
 
