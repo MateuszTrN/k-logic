@@ -5,7 +5,6 @@ import {Provider, connect} from 'react-redux';
 import sagaMiddleware from './sagaMiddleware';
 import App from './components/app';
 import appReducer from './components/appReducer';
-import {createRouterMiddleware, start} from '../../src/main';
 
 const composeEnhancers =
     typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -16,10 +15,14 @@ const composeEnhancers =
 
 const store = createStore(
     appReducer,
-    composeEnhancers(
-        applyMiddleware(/*createRouterMiddleware('router'), */ sagaMiddleware)
-    )
+    composeEnhancers(applyMiddleware(sagaMiddleware))
 );
+
+store.runSaga = sagaMiddleware.run;
+
+sagaMiddleware.run('dupa', function*() {
+    console.log('hopla');
+});
 
 const run = (containerDomId, View) => {
     const ConnectedView = connect(appState => ({
@@ -35,7 +38,6 @@ const run = (containerDomId, View) => {
 };
 
 run('root', App);
-//start();
 
 if (module.hot) {
     module.hot.accept('./components/app', () => {
