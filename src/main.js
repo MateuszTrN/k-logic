@@ -1,42 +1,10 @@
-import React, {createFactory, Component, createElement} from 'react';
-import {connect} from 'react-redux';
+import React, {Component, createFactory} from 'react';
 import sagaMiddleware from './sagaMiddleware';
 import PropTypes from 'prop-types';
-import {
-    assocPath,
-    assoc,
-    over,
-    lensProp,
-    add,
-    lensPath,
-    view,
-    identity,
-    times,
-    addIndex,
-    map,
-    curry,
-    set,
-    pick,
-    composeP,
-} from 'ramda';
-import {
-    actionType,
-    wrapAction,
-    fromTree,
-    actionType2,
-    createReducer,
-} from 'k-reducer';
-import {
-    compose,
-    withProps,
-    withHandlers,
-    setDisplayName,
-    wrapDisplayName,
-    setPropTypes,
-    onlyUpdateForPropTypes,
-} from 'recompose';
-import {put, fork, call, takeEvery} from 'redux-saga/effects';
-import {delay} from 'redux-saga';
+import {addIndex, assocPath, curry, lensPath, map, set, view} from 'ramda';
+import {fromTree, wrapAction} from 'k-reducer';
+import {setDisplayName, wrapDisplayName} from 'recompose';
+import {call, put, takeEvery} from 'redux-saga/effects';
 
 const mapWithKey = addIndex(map);
 
