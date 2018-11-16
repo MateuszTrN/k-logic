@@ -1,43 +1,24 @@
-import React, {createFactory, Component, createElement} from 'react';
-import {connect} from 'react-redux';
-import sagaMiddleware from '../sagaMiddleware';
-import PropTypes from 'prop-types';
+import React, {createElement} from 'react';
 import {
-    assocPath,
-    assoc,
-    over,
-    lensProp,
     add,
-    lensPath,
-    view,
-    identity,
-    times,
     addIndex,
-    map,
-    curry,
-    set,
-    pick,
+    assoc,
     composeP,
+    curry,
+    identity,
+    lensPath,
+    lensProp,
+    map,
+    over,
+    pick,
+    set,
+    times,
 } from 'ramda';
-import {Router, Route, Link} from '../../../src/main';
-import {
-    actionType,
-    wrapAction,
-    fromTree,
-    actionType2,
-    createReducer,
-} from 'k-reducer';
-import {
-    compose,
-    withProps,
-    withHandlers,
-    setDisplayName,
-    wrapDisplayName,
-    setPropTypes,
-    onlyUpdateForPropTypes,
-} from 'recompose';
-import {put, fork, call, takeEvery} from 'redux-saga/effects';
-import {delay} from 'redux-saga';
+import {actionType, actionType2, createReducer} from 'k-reducer';
+import {compose, withHandlers} from 'recompose';
+import {call, fork, put, takeEvery} from 'redux-saga/effects';
+import {withLogic} from '../../../src/main';
+
 const mapWithKey = addIndex(map);
 
 const asyncActionTypeName = curry(
@@ -119,168 +100,11 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
         });
     };
 
-const withLogic = ({reducer, saga}) => BaseComponent => {
-    const factory = createFactory(BaseComponent);
+const Scope = withLogic({reducer: () => createReducer({}, [])})(
+    ({children}) => <div>{children}</div>
+);
 
-    class WithReducer extends Component {
-        constructor(props, context) {
-            super();
-            if (!context.kScope) {
-                this.reducersTree = {};
-            }
-        }
-        static contextTypes = {
-            store: PropTypes.object,
-            kScope: PropTypes.object,
-        };
-
-        static childContextTypes = {
-            kScope: PropTypes.object,
-        };
-
-        componentWillMount() {
-            if (reducer) {
-                this.assocReducer(this.getCurrentScope(), reducer(this.props));
-            }
-            if (saga) {
-                console.log('saga');
-                sagaMiddleware.run(this.getCurrentScope().join('.'), saga);
-            }
-        }
-
-        assocReducer(path, reducer) {
-            if (this.context.kScope) {
-                return this.context.kScope.assocReducer(path, reducer);
-            } else {
-                this.reducersTree = assocPath(
-                    [...path, '.'],
-                    reducer,
-                    this.reducersTree
-                );
-
-                this.context.store.replaceReducer(fromTree(this.reducersTree));
-            }
-        }
-
-        getCurrentScope() {
-            return [
-                ...(this.context.kScope ? this.context.kScope.scope : []),
-                this.props.scope != null
-                    ? '' + this.props.scope
-                    : 'defaultScope',
-            ];
-        }
-
-        getCurrentReducersTree() {
-            return this.context.kScope
-                ? this.context.kScope.reducersTree
-                : this.reducersTree;
-        }
-
-        getChildContext() {
-            return {
-                kScope: {
-                    scope: this.getCurrentScope(),
-                    reducersTree: this.getCurrentReducersTree(),
-                    assocReducer: this.assocReducer.bind(this),
-                },
-            };
-        }
-
-        dispatch = action =>
-            this.context.store.dispatch(
-                wrapAction(action, ...this.getCurrentScope())
-            );
-
-        render() {
-            const state = view(
-                lensPath(this.getCurrentScope()),
-                this.context.store.getState()
-            );
-
-            return factory({
-                ...this.props,
-                dispatch: this.dispatch,
-                ...state,
-            });
-        }
-    }
-
-    if (process.env.NODE_ENV !== 'production') {
-        return setDisplayName(wrapDisplayName(BaseComponent, 'withReducer'))(
-            WithReducer
-        );
-    }
-    return WithReducer;
-};
-
-const InputTest = compose(
-    withLogic(
-        createReducer({text: 'Jaśko', text2: 'Dupa'}, [
-            actionType('SET_TEXT', assoc('text')),
-            actionType('SET_TEXT2', assoc('text2')),
-        ])
-    ),
-    withHandlers({
-        onChange: props => e =>
-            props.dispatch({type: 'SET_TEXT', payload: e.target.value}),
-        onChange2: props => e =>
-            props.dispatch({type: 'SET_TEXT2', payload: e.target.value}),
-    })
-)(({children, text, text2, onChange, onChange2}) => (
-    <div>
-        <div>Test:</div>
-        <div>
-            <input value={text} onChange={onChange} />
-            XXX:
-            <input value={text2} onChange={onChange2} />
-        </div>
-        {children}
-    </div>
-));
-
-const Test = compose(
-    withLogic(
-        createReducer({counter: 0}, [
-            actionType2('INC', over(lensProp('counter'), add(1))),
-        ])
-    ),
-    withHandlers({
-        onClick: props => e => props.dispatch({type: 'INC', payload: 'hops'}),
-    })
-)(({children, counter, onClick}) => (
-    <div>
-        <div>Test:</div>
-        <div>
-            <button onClick={onClick} type="button">
-                {`Go ${counter}`}
-            </button>
-            <InputTest scope="input" />
-        </div>
-        {children}
-    </div>
-));
-
-const Scope = withLogic({reducer: createReducer({}, [])})(({children}) => (
-    <div>{children}</div>
-));
-
-const Button = compose(
-    withLogic(
-        createReducer({counter: 0}, [
-            actionType2('INC', over(lensProp('counter'), add(1))),
-        ])
-    ),
-    withHandlers({
-        onClick: props => e => props.dispatch({type: 'INC', payload: 'hops'}),
-    })
-)(({children, counter, onClick}) => (
-    <button onClick={onClick} type="button">
-        {`Hopla ${counter}`}
-    </button>
-));
-
-const Array = withLogic({reducer: createReducer({}, [])})(
+const Array = withLogic({reducer: () => createReducer({}, [])})(
     ({of, items, ...rest}) =>
         mapWithKey(
             (e, idx) =>
@@ -291,18 +115,19 @@ const Array = withLogic({reducer: createReducer({}, [])})(
 
 const Student = compose(
     withLogic({
-        reducer: createReducer(
-            {
-                name: '',
-                surname: '',
-                data: {gists: {result: [], pending: false}},
-            },
-            [
-                actionType('SET_NAME', assoc('name')),
-                actionType('SET_SURNAME', assoc('surname')),
-                handleAsyncs(),
-            ]
-        ),
+        reducer: () =>
+            createReducer(
+                {
+                    name: '',
+                    surname: '',
+                    data: {gists: {result: [], pending: false}},
+                },
+                [
+                    actionType('SET_NAME', assoc('name')),
+                    actionType('SET_SURNAME', assoc('surname')),
+                    handleAsyncs(),
+                ]
+            ),
         saga: createSaga({
             start: fetchOnEvery({
                 actions: ['SET_NAME'],
@@ -330,9 +155,10 @@ const Student = compose(
 
 const StudentList = compose(
     withLogic({
-        reducer: createReducer({itemCount: 0}, [
-            actionType2('INC', over(lensProp('itemCount'), add(1))),
-        ]),
+        reducer: () =>
+            createReducer({itemCount: 0}, [
+                actionType2('INC', over(lensProp('itemCount'), add(1))),
+            ]),
     }),
     withHandlers({
         onAddStudentClick: props => e => props.dispatch({type: 'INC'}),
@@ -346,40 +172,10 @@ const StudentList = compose(
     </div>
 ));
 
-const Layout = ({children}) => <div>{children}</div>;
-
 const Projects = () => (
-    <Scope scope="root">
+    <Scope scope="root.dupa">
         <Student scope="student" />
     </Scope>
 );
 
-const ProjectEdit = () => (
-    <div>
-        Project Edit
-        <Link name="root.projects" content="Go to projects" />
-    </div>
-);
-/*
-const App0 = ({model, dispatch}) => (
-    <Router>
-        <Route name="root" path="/" component={Layout}>
-            <Route
-                name="projects"
-                path="projects"
-                modelPath="projects"
-                component={Projects}
-            />
-            <Route
-                name="projectEdit"
-                path="projects/:projectId"
-                modelPath="projectEdit"
-                component={ProjectEdit}
-            />
-        </Route>
-    </Router>
-);*/
-
-const App = Projects;
-
-export default App;
+export default Projects;
