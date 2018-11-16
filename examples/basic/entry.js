@@ -20,10 +20,6 @@ const store = createStore(
 
 store.runSaga = sagaMiddleware.run;
 
-sagaMiddleware.run('dupa', function*() {
-    console.log('hopla');
-});
-
 const run = (containerDomId, View) => {
     const ConnectedView = connect(appState => ({
         model: appState,

@@ -85,7 +85,6 @@ const getGists = () =>
 
 const createSaga = ({start}) =>
     function*() {
-        console.log('createSaga');
         yield fork(start);
     };
 
