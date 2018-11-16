@@ -65,8 +65,10 @@ const withLogic = ({reducer, saga}) => BaseComponent => {
                 this.assocReducer(this.getCurrentScope(), reducer(this.props));
             }
             if (saga) {
-                console.log('saga');
-                sagaMiddleware.run(this.getCurrentScope().join('.'), saga);
+                this.context.store.runSaga(
+                    this.getCurrentScope().join('.'),
+                    saga
+                );
             }
         }
 
