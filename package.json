@@ -8,7 +8,7 @@
   "main": "dist/k-logic.cjs.js",
   "module": "dist/k-logic.esm.js",
   "dependencies": {
-    "k-reducer": "^0.2.1",
+    "k-reducer": "^0.2.5",
     "path-parser": "^4.2.0",
     "ramda": "^0.25.0",
     "react": "^16.5.2",
