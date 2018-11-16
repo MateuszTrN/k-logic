@@ -8,7 +8,7 @@ module.exports = {
     entry: ['@babel/polyfill', './entry.js'],
     output: {
         path: path.join(__dirname, 'dist'),
-        filename: 'bundle.js'
+        filename: 'bundle.js',
     },
     module: {
         rules: [
@@ -16,16 +16,16 @@ module.exports = {
                 test: /\.jsx?$/,
                 exclude: /node_modules|libs/,
                 loader: 'babel-loader',
-                options: babelrcObject
+                options: babelrcObject,
             },
-        ]
+        ],
     },
     plugins: [
         new HtmlWebpackPlugin({
             template: 'index.template.ejs',
             inject: 'body',
         }),
-    ]
+    ],
 };
 
 // This will make the redux-simpler-router module resolve to the
@@ -34,7 +34,7 @@ module.exports = {
 var src = path.join(__dirname, '..', '..', 'src');
 if (fs.existsSync(src)) {
     // Use the latest src
-    module.exports.resolve = { alias: { 'react-router-redux': src } };
+    module.exports.resolve = {alias: {'react-router-redux': src}};
     /*module.exports.module.loaders.push({
         test: /\.js$/,
         loaders: ['babel'],
