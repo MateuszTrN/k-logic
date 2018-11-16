@@ -5,6 +5,7 @@ const babelrcObject = require('./.babelrc');
 
 module.exports = {
     mode: 'development',
+    devtool: 'source-map',
     entry: ['@babel/polyfill', './entry.js'],
     output: {
         path: path.join(__dirname, 'dist'),
