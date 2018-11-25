@@ -8,25 +8,82 @@ import {call, put, takeEvery} from 'redux-saga/effects';
 
 const mapWithKey = addIndex(map);
 
+class ScopedComponent extends Component {
+    constructor(props, context) {
+        super();
+        if (!context.kScope) {
+            this.reducersTree = {};
+        }
+    }
+
+    static contextTypes = {
+        store: PropTypes.object,
+        kScope: PropTypes.object,
+    };
+
+    static childContextTypes = {
+        kScope: PropTypes.object,
+    };
+
+    assocReducer(path, reducer) {
+        if (this.context.kScope) {
+            return this.context.kScope.assocReducer(path, reducer);
+        } else {
+            this.reducersTree = assocPath(
+                [...path, '.'],
+                reducer,
+                this.reducersTree
+            );
+
+            this.context.store.replaceReducer(fromTree(this.reducersTree));
+        }
+    }
+
+    getCurrentScope() {
+        return [
+            ...(this.context.kScope ? this.context.kScope.scope : []),
+            ...(this.props.scope != null
+                ? ('' + this.props.scope).split('.')
+                : ['defaultScope']),
+        ];
+    }
+
+    getCurrentReducersTree() {
+        return this.context.kScope
+            ? this.context.kScope.reducersTree
+            : this.reducersTree;
+    }
+
+    getChildContext() {
+        return {
+            kScope: {
+                scope: this.getCurrentScope(),
+                reducersTree: this.getCurrentReducersTree(),
+                assocReducer: this.assocReducer.bind(this),
+            },
+        };
+    }
+
+    dispatch = action =>
+        this.context.store.dispatch(
+            wrapAction(action, ...this.getCurrentScope())
+        );
+
+    getScopedState() {
+        return view(
+            lensPath(this.getCurrentScope()),
+            this.context.store.getState()
+        );
+    }
+}
+
 const withLogic = ({reducer, saga}) => BaseComponent => {
     const factory = createFactory(BaseComponent);
 
-    class WithReducer extends Component {
+    class WithReducer extends ScopedComponent {
         constructor(props, context) {
-            super();
-            if (!context.kScope) {
-                this.reducersTree = {};
-            }
+            super(props, context);
         }
-
-        static contextTypes = {
-            store: PropTypes.object,
-            kScope: PropTypes.object,
-        };
-
-        static childContextTypes = {
-            kScope: PropTypes.object,
-        };
 
         componentWillMount() {
             if (reducer) {
@@ -40,60 +97,11 @@ const withLogic = ({reducer, saga}) => BaseComponent => {
             }
         }
 
-        assocReducer(path, reducer) {
-            if (this.context.kScope) {
-                return this.context.kScope.assocReducer(path, reducer);
-            } else {
-                this.reducersTree = assocPath(
-                    [...path, '.'],
-                    reducer,
-                    this.reducersTree
-                );
-
-                this.context.store.replaceReducer(fromTree(this.reducersTree));
-            }
-        }
-
-        getCurrentScope() {
-            return [
-                ...(this.context.kScope ? this.context.kScope.scope : []),
-                ...(this.props.scope != null
-                    ? ('' + this.props.scope).split('.')
-                    : ['defaultScope']),
-            ];
-        }
-
-        getCurrentReducersTree() {
-            return this.context.kScope
-                ? this.context.kScope.reducersTree
-                : this.reducersTree;
-        }
-
-        getChildContext() {
-            return {
-                kScope: {
-                    scope: this.getCurrentScope(),
-                    reducersTree: this.getCurrentReducersTree(),
-                    assocReducer: this.assocReducer.bind(this),
-                },
-            };
-        }
-
-        dispatch = action =>
-            this.context.store.dispatch(
-                wrapAction(action, ...this.getCurrentScope())
-            );
-
         render() {
-            const state = view(
-                lensPath(this.getCurrentScope()),
-                this.context.store.getState()
-            );
-
             return factory({
                 ...this.props,
                 dispatch: this.dispatch,
-                ...state,
+                ...this.getScopedState(),
             });
         }
     }
@@ -176,4 +184,11 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
         });
     };
 
-export {withLogic, handleAsyncs, asyncAction, fetchOnEvery, sagaMiddleware};
+export {
+    withLogic,
+    handleAsyncs,
+    asyncAction,
+    fetchOnEvery,
+    sagaMiddleware,
+    ScopedComponent,
+};
