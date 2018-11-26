@@ -79,6 +79,10 @@ class ScopedComponent extends Component {
             this.context.store.getState()
         );
     }
+
+    render() {
+        return this.props.children;
+    }
 }
 
 const withLogic = ({reducer, saga}) => BaseComponent => {
