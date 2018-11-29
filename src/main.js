@@ -28,7 +28,7 @@ class ScopedComponent extends Component {
     assocReducer(reducer) {
         const path = this.getCurrentScope();
         if (this.context.kScope) {
-            return this.context.kScope.assocReducer(path, reducer);
+            return this.context.kScope.assocReducer(reducer);
         } else {
             this.reducersTree = assocPath(
                 [...path, '.'],
