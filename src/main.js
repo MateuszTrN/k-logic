@@ -46,10 +46,10 @@ class ScopedComponent extends Component {
             : [];
     }
 
-    getCurrentScope(currentPart) {
+    getCurrentScope() {
         return [
             ...(this.context.kScope ? this.context.kScope.scope : []),
-            ...(currentPart ? currentPart : this.getCurrentScopePart()),
+            ...this.getCurrentScopePart(),
         ];
     }
 
