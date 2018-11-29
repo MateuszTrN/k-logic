@@ -25,8 +25,7 @@ class ScopedComponent extends Component {
         kScope: PropTypes.object,
     };
 
-    assocReducer(reducer) {
-        const path = this.getCurrentScope();
+    assocReducer(path, reducer) {
         if (this.context.kScope) {
             return this.context.kScope.assocReducer(path, reducer);
         } else {
@@ -96,7 +95,7 @@ const withLogic = ({reducer, saga}) => BaseComponent => {
 
         componentWillMount() {
             if (reducer) {
-                this.assocReducer(reducer(this.props));
+                this.assocReducer(this.getCurrentScope(), reducer(this.props));
             }
             if (saga) {
                 this.context.store.runSaga(
