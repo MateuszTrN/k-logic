@@ -43,7 +43,7 @@ class ScopedComponent extends Component {
     getCurrentScopePart() {
         return this.props.scope != null
             ? ('' + this.props.scope).split('.')
-            : ['defaultScope'];
+            : [];
     }
 
     getCurrentScope(currentPart) {
