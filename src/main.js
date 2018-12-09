@@ -176,24 +176,6 @@ const buildModelLenses = (modelDef, options) => {
   );
 };
 
-/*
-const modelDef = {
-  a: {
-    result: lensPath(['form', 'fields']),
-  },
-  b: {},
-  c: {},
-};
-
-let model = {hopla: 'test data'};
-
-model = setValue(modelDef, {}, 'a', 'pending', true, model);
-
-model = setValue(modelDef, {}, 'a', 'result', 'xxx', model);
-
-const modelLenses = buildModelLenses(modelDef, {});
-*/
-
 const initModelField = (fieldLens, target) =>
   compose(
     set(fieldLens.result, null),
@@ -207,8 +189,6 @@ const initModel = (modelDef, modelLenses, target) =>
     target,
     keys(modelDef)
   );
-
-//initModel(modelDef, modelLenses, {dupa: 1});
 
 const handleAsyncs = (modelDef, options = {}) => {
   const modelLenses = buildModelLenses(modelDef, options);
