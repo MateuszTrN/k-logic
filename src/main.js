@@ -194,7 +194,6 @@ const handleAsyncs = (modelDef, options = {}) => {
   const modelLenses = buildModelLenses(modelDef, options);
 
   return (model, {type, payload}) => {
-    console.log('handleAsyncs', model, type);
     if (type === '@@INIT') {
       return initModel(modelDef, modelLenses, model);
     }
