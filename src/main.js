@@ -1,129 +1,30 @@
-import React, {Component, createFactory} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+} from 'react';
 import sagaMiddleware from './sagaMiddleware';
-import PropTypes from 'prop-types';
+import bindActionCreators from './bindActionCreators';
+import Scope from './scope';
+import withScope from './withScope';
+import {KLogicContext, KLogicProvider} from './kLogicProvider';
 import {
   addIndex,
-  assocPath,
+  compose,
   curry,
+  keys,
   lensPath,
-  map,
-  set,
-  view,
   lensProp,
+  map,
   mapObjIndexed,
   merge,
   reduce,
-  keys,
-  compose,
+  set,
 } from 'ramda';
-import {fromTree, wrapAction} from 'k-reducer';
-import {setDisplayName, wrapDisplayName} from 'recompose';
 import {call, put, takeEvery} from 'redux-saga/effects';
 
 const mapWithKey = addIndex(map);
-
-class ScopedComponent extends Component {
-  constructor(props, context) {
-    super();
-    if (!context.kScope) {
-      this.reducersTree = {};
-    }
-  }
-
-  static contextTypes = {
-    store: PropTypes.object,
-    kScope: PropTypes.object,
-  };
-
-  static childContextTypes = {
-    kScope: PropTypes.object,
-  };
-
-  assocReducer(path, reducer) {
-    if (this.context.kScope) {
-      return this.context.kScope.assocReducer(path, reducer);
-    } else {
-      this.reducersTree = assocPath([...path, '.'], reducer, this.reducersTree);
-
-      this.context.store.replaceReducer(fromTree(this.reducersTree));
-    }
-  }
-
-  getCurrentScopePart() {
-    return this.props.scope != null ? ('' + this.props.scope).split('.') : [];
-  }
-
-  getCurrentScope(currentPart) {
-    return [
-      ...(this.context.kScope ? this.context.kScope.scope : []),
-      ...(currentPart ? currentPart : this.getCurrentScopePart()),
-    ];
-  }
-
-  getCurrentReducersTree() {
-    return this.context.kScope
-      ? this.context.kScope.reducersTree
-      : this.reducersTree;
-  }
-
-  getChildContext() {
-    return {
-      kScope: {
-        scope: this.getCurrentScope(),
-        reducersTree: this.getCurrentReducersTree(),
-        assocReducer: this.assocReducer.bind(this),
-      },
-    };
-  }
-
-  dispatch = action =>
-    this.context.store.dispatch(wrapAction(action, ...this.getCurrentScope()));
-
-  getScopedState() {
-    return view(
-      lensPath(this.getCurrentScope()),
-      this.context.store.getState()
-    );
-  }
-
-  render() {
-    return this.props.children;
-  }
-}
-
-const withLogic = ({reducer, saga}) => BaseComponent => {
-  const factory = createFactory(BaseComponent);
-
-  class WithReducer extends ScopedComponent {
-    constructor(props, context) {
-      super(props, context);
-    }
-
-    componentWillMount() {
-      if (reducer) {
-        this.assocReducer(this.getCurrentScope(), reducer(this.props));
-      }
-      if (saga) {
-        this.context.store.runSaga(this.getCurrentScope().join('.'), saga);
-      }
-    }
-
-    render() {
-      return factory({
-        ...this.props,
-        dispatch: this.dispatch,
-        ...this.getScopedState(),
-      });
-    }
-  }
-
-  if (process.env.NODE_ENV !== 'production') {
-    return setDisplayName(wrapDisplayName(BaseComponent, 'withReducer'))(
-      WithReducer
-    );
-  }
-  return WithReducer;
-};
 
 const asyncActionTypeName = curry(
   (stage, baseType) => `Async/${baseType}/${stage}`
@@ -228,11 +129,60 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
     });
   };
 
+const useKReducer = (reducer, actions) => {
+  const context = useContext(KLogicContext);
+
+  useLayoutEffect(() => {
+    context.assocReducer([...context.scope, '.'], reducer);
+  }, []);
+
+  //TODO: performance
+  const initialState = reducer(undefined, {type: '@@INIT'});
+
+  return {
+    ...bindActionCreators(actions, context.dispatch),
+    ...initialState,
+    ...context.state,
+  };
+};
+
+const asyncAction2 = async (fn, key, dispatch) => {
+  try {
+    dispatch(requestAction(key));
+    const result = await fn();
+    dispatch(succeededAction(key, result));
+    return result;
+  } catch (e) {
+    dispatch(failedAction(key, e));
+  }
+};
+
+const useAsync = (fn, key) => {
+  const context = useContext(KLogicContext);
+
+  return useCallback(() => {
+    asyncAction2(fn, key, context.dispatch).then();
+  }, []);
+};
+
+const useSaga = saga => {
+  const context = useContext(KLogicContext);
+
+  return useEffect(() => {
+    context.runSaga(context.scope.join('.'), saga);
+  }, []);
+};
+
 export {
-  withLogic,
   handleAsyncs,
   asyncAction,
   fetchOnEvery,
   sagaMiddleware,
-  ScopedComponent,
+  KLogicProvider,
+  KLogicContext,
+  useKReducer,
+  useAsync,
+  Scope,
+  withScope,
+  useSaga,
 };

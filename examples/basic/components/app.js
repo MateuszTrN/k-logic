@@ -1,59 +1,22 @@
-import React, {createElement} from 'react';
-import PropTypes from 'prop-types';
+import React, {useEffect, createFactory, Component, Children} from 'react';
+import {add, addIndex, lensProp, map, over, assoc} from 'ramda';
+import {actionType2, createReducer, actionType, forwardTo} from 'k-reducer';
+import {delay} from 'redux-saga';
+import {put, takeEvery} from 'redux-saga/effects';
 import {
-  add,
-  addIndex,
-  assoc,
-  composeP,
-  curry,
-  identity,
-  lensPath,
-  lensProp,
-  map,
-  over,
-  pick,
-  set,
-  times,
-} from 'ramda';
-import {actionType, actionType2, createReducer} from 'k-reducer';
-import {compose, withHandlers} from 'recompose';
-import {call, fork, put, takeEvery} from 'redux-saga/effects';
-import {withLogic, handleAsyncs} from '../../../src/main';
+  handleAsyncs,
+  Scope,
+  useAsync,
+  useKReducer,
+  withScope,
+  useSaga,
+} from '../../../src/main';
 
 const mapWithKey = addIndex(map);
 
-const asyncActionTypeName = curry(
-  (stage, baseType) => `Async/${baseType}/${stage}`
-);
-const succeedAsyncActionName = asyncActionTypeName('Succeeded');
-const failedAsyncActionName = asyncActionTypeName('Failed');
-const requestedAsyncActionName = asyncActionTypeName('Request');
-
-const createAsyncAction = stage => (baseType, payload) => ({
-  type: asyncActionTypeName(stage, baseType),
-  payload,
-});
-
-const requestAction = createAsyncAction('Request');
-const succeededAction = createAsyncAction('Succeeded');
-const failedAction = createAsyncAction('Failed');
-
-const asyncActionRegexp = new RegExp(`^Async/(.+)/(.+)$`);
-
-function* asyncAction({baseType, fn, args}) {
-  try {
-    yield put(requestAction(baseType));
-    const result = yield call(fn, ...(args || []));
-    yield put(succeededAction(baseType, result));
-    return result;
-  } catch (e) {
-    yield put(failedAction(baseType, e));
-  }
-}
-
 const getGists = () =>
   fetch('https://api.github.com/gists/public').then(r => r.json(), r => r);
-
+/*
 const createSaga = ({start}) =>
   function*() {
     yield fork(start);
@@ -69,11 +32,8 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
       });
     });
   };
-
-const Scope = withLogic({reducer: () => createReducer({}, [])})(
-  ({children}) => <div>{children}</div>
-);
-
+*/
+/*
 const Array = withLogic({reducer: () => createReducer({}, [])})(
   ({of, items, ...rest}) =>
     mapWithKey(
@@ -81,51 +41,39 @@ const Array = withLogic({reducer: () => createReducer({}, [])})(
       items
     )
 );
+*/
 
-const Student = compose(
-  withLogic({
-    reducer: () =>
-      createReducer(
-        {
-          name: '',
-          surname: '',
-        },
-        [
-          actionType('SET_NAME', assoc('name')),
-          actionType('SET_SURNAME', assoc('surname')),
-          handleAsyncs({
-            gists: {type: PropTypes.array},
-            dataConnection: {
-              type: PropTypes.object,
-              result: lensProp('connection'),
-            },
-          }),
-        ]
-      ),
-    saga: createSaga({
-      start: fetchOnEvery({
-        actions: ['SET_NAME'],
-        fn: composeP(
-          map(pick(['description', 'url'])),
-          getGists
-        ),
-        resourceKey: 'gists',
-      }),
-    }),
-  }),
-  withHandlers({
-    onNameChange: props => e =>
-      props.dispatch({type: 'SET_NAME', payload: e.target.value}),
-    onSurnameChange: props => e =>
-      props.dispatch({type: 'SET_SURNAME', payload: e.target.value}),
-  })
-)(({name, onNameChange, surname, onSurnameChange, data}) => (
-  <div>
-    <input value={name} onChange={onNameChange} />
-    <input value={surname} onChange={onSurnameChange} />
-    <pre>{JSON.stringify(data, null, 2)}</pre>
-  </div>
-));
+const studentReducer = createReducer(
+  {
+    name: '',
+    surname: '',
+  },
+  [
+    actionType('SET_NAME', assoc('name')),
+    actionType('SET_SURNAME', assoc('surname')),
+  ]
+);
+
+const studentActions = {
+  setName: e => ({type: 'SET_NAME', payload: e.target.value}),
+  setSurname: e => ({type: 'SET_SURNAME', payload: e.target.value}),
+};
+
+const Student = withScope(() => {
+  const {name, setName, surname, setSurname} = useKReducer(
+    studentReducer,
+    studentActions
+  );
+
+  return (
+    <div>
+      <input value={name} onChange={setName} />
+      <input value={surname} onChange={setSurname} />
+    </div>
+  );
+});
+
+/*
 
 const StudentList = compose(
   withLogic({
@@ -152,4 +100,96 @@ const Projects = () => (
   </Scope>
 );
 
-export default Projects;
+*/
+
+const counterReducer = createReducer({counter: 0}, [
+  actionType2('INC', over(lensProp('counter'), add(1))),
+  actionType2('DEC', over(lensProp('counter'), add(-1))),
+]);
+
+const counterActions = {
+  inc: () => ({type: 'INC'}),
+  dec: () => ({type: 'DEC'}),
+};
+
+const Counter = withScope(() => {
+  const {inc, dec, counter} = useKReducer(counterReducer, counterActions);
+  return (
+    <div>
+      <button onClick={dec}>dec</button>
+      {counter}
+      <button onClick={inc}>inc</button>
+    </div>
+  );
+});
+
+const ScopeList = ({scope, children}) => {
+  return (
+    <Scope scope={scope}>
+      {Children.map(children, (e, idx) => ({
+        ...e,
+        props: {...e.props, scope: e.props.scope ? e.props.scope : '' + idx},
+      }))}
+    </Scope>
+  );
+};
+
+const gistsReducer = createReducer({}, [
+  handleAsyncs({
+    gists: {},
+  }),
+]);
+
+const gistsSaga = function*() {
+  yield takeEvery('ping', function*() {
+    for (let i = 0; i < 5; i++) {
+      yield delay(1000);
+      yield put({type: 'pong', payload: i});
+    }
+  });
+};
+
+const gistsActions = {
+  ping: () => ({type: 'ping'}),
+};
+
+const Gists = withScope(() => {
+  const {data, ping} = useKReducer(gistsReducer, gistsActions);
+  const loadGists = useAsync(getGists, 'gists');
+  useSaga(gistsSaga);
+  /*useEffect(() => {
+    loadGists();
+  }, []);*/
+
+  return (
+    <div>
+      <button onClick={loadGists}>Load</button>
+      <button onClick={ping}>Ping</button>
+      {mapWithKey(
+        (g, idx) => (
+          <div key={idx}>
+            <a href={g.url}>{g.url}</a>
+          </div>
+        ),
+        data.gists.result || []
+      )}
+    </div>
+  );
+});
+
+const Projects4 = () => (
+  <Scope scope="root">
+    <ScopeList scope="counters">
+      <Counter />
+      <Counter />
+      <Counter />
+    </ScopeList>
+    <Gists scope="gists" />
+    <Scope scope="students">
+      <Student scope="s1" />
+      <Student scope="s2" />
+    </Scope>
+  </Scope>
+);
+
+export default Projects4;
