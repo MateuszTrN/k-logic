@@ -1,4 +1,5 @@
 import React, {Component, createFactory} from 'react';
+import {pathOr} from 'ramda';
 import {forwardTo} from 'k-reducer';
 import {KLogicContext} from './kLogicProvider';
 
@@ -14,12 +15,13 @@ const withScope = BaseComponent => {
     static contextType = KLogicContext;
 
     getNewContext() {
+      const scopeArray = this.props.scope.split('.');
       return this.props.scope
         ? {
             ...this.context,
-            dispatch: forwardTo(this.context.dispatch, this.props.scope),
-            state: this.context.state[this.props.scope],
-            scope: [...this.context.scope, this.props.scope],
+            dispatch: forwardTo(this.context.dispatch, ...scopeArray),
+            state: pathOr({}, scopeArray, this.context.state),
+            scope: [...this.context.scope, ...scopeArray],
           }
         : this.context;
     }
