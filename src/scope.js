@@ -11,7 +11,7 @@ const Scope = ({scope, children}) => {
     ...context,
     scope: newScope,
     dispatch: forwardTo(context.dispatch, ...scopeArray),
-    state: pathOr({}, ...scopeArray, context.state),
+    state: pathOr({}, scopeArray, context.state),
   };
 
   return (
