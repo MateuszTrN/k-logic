@@ -133,7 +133,11 @@ const useKReducer = (reducer, actions) => {
   const context = useContext(KLogicContext);
 
   useLayoutEffect(() => {
-    context.assocReducer([...context.scope, '.'], reducer);
+    const reducerPath = [...context.scope, '.'];
+    context.assocReducer(reducerPath, reducer);
+    return () => {
+      context.dissocReducer(reducerPath);
+    };
   }, []);
 
   //TODO: performance

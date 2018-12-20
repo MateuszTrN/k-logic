@@ -1,10 +1,11 @@
 import React, {createContext, useEffect, useRef, useState} from 'react';
-import {assocPath, path} from 'ramda';
+import {assocPath, dissocPath, path} from 'ramda';
 import {fromTree} from 'k-reducer';
 
 const defaultContextValue = {
   scope: [],
   assocReducer: () => {},
+  dissocReducer: () => {},
   dispatch: () => {},
   runSaga: () => {},
   state: {},
@@ -36,6 +37,17 @@ function KLogicProvider({store, runSaga, children}) {
     }
   };
 
+  const dissocReducer = rPath => {
+    if (!path(rPath, reducersTree.current)) {
+      console.warning('additional scope is required for: ', rPath);
+    } else {
+      const newTree = dissocPath(rPath, reducersTree.current);
+      reducersTree.current = newTree;
+      store.replaceReducer(fromTree(newTree));
+      setContext({...context, state: store.getState()});
+    }
+  };
+
   const state = store.getState();
 
   return (
@@ -43,6 +55,7 @@ function KLogicProvider({store, runSaga, children}) {
       value={{
         ...context,
         assocReducer,
+        dissocReducer,
         dispatch: store.dispatch,
         state,
         runSaga,
