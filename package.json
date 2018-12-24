@@ -15,7 +15,7 @@
     "reselect": "^4.0.0"
   },
   "peerDependencies": {
-    "k-reducer": "^0.2.5",
+    "k-reducer": "^0.2.6",
     "react": "^16.7.0-alpha"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "glob": "^7.1.3",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^23.6.0",
-    "k-reducer": "^0.2.5",
+    "k-reducer": "^0.2.6",
     "prettier": "^1.14.3",
     "prop-types": "^15.6.2",
     "react": "^16.7.0-alpha",

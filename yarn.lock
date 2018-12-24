@@ -3875,9 +3875,9 @@ just-curry-it@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/just-curry-it/-/just-curry-it-3.1.0.tgz#ab59daed308a58b847ada166edd0a2d40766fbc5"
 
-k-reducer@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/k-reducer/-/k-reducer-0.2.5.tgz#9e8536d1f171cf3defe3bc923e0f22b7c566ee6f"
+k-reducer@^0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/k-reducer/-/k-reducer-0.2.6.tgz#2d3afe59ccf905aea61c70bcceb611fc2303c140"
   dependencies:
     ramda "^0.25.0"
 
