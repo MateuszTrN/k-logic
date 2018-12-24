@@ -8,6 +8,7 @@ import sagaMiddleware from './sagaMiddleware';
 import bindActionCreators from './bindActionCreators';
 import Scope from './scope';
 import withScope from './withScope';
+import withDebug from './withDebug';
 import shallowEqual from './shallowEqual';
 import {KLogicContext, KLogicProvider} from './kLogicProvider';
 import {
@@ -189,6 +190,7 @@ export {
   useAsync,
   Scope,
   withScope,
+  withDebug,
   useSaga,
   shallowEqual,
 };
