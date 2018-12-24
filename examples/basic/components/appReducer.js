@@ -1,7 +1,5 @@
 import {createReducer} from 'k-reducer';
-const initialState = {
-    router: {},
-};
+const initialState = {};
 
 const appReducer = createReducer(initialState, []);
 
