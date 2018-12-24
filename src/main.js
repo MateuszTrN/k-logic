@@ -209,4 +209,5 @@ export {
   withDebug,
   useSaga,
   shallowEqual,
+  bindActionCreators,
 };
