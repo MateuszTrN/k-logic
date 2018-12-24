@@ -1,4 +1,10 @@
-import React, {createContext, useEffect, useRef, useState} from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {assocPath, dissocPath, path} from 'ramda';
 import {fromTree} from 'k-reducer';
 
@@ -8,7 +14,8 @@ const defaultContextValue = {
   dissocReducer: () => {},
   dispatch: () => {},
   runSaga: () => {},
-  state: {},
+  getState: () => {},
+  subscribe: () => {},
 };
 
 const KLogicContext = createContext(defaultContextValue);
@@ -17,50 +24,49 @@ function KLogicProvider({store, runSaga, children}) {
   const [context, setContext] = useState(defaultContextValue);
   const reducersTree = useRef({});
 
-  useEffect(() => {
-    store.subscribe(() => {
-      setContext({
-        ...context,
-        state: store.getState(),
-      });
-    });
-  }, []);
+  const assocReducer = useCallback(
+    (rPath, reducer) => {
+      if (path(rPath, reducersTree.current)) {
+        console.error('additional scope is required for: ', rPath);
+      } else {
+        const newTree = assocPath(rPath, reducer, reducersTree.current);
+        reducersTree.current = newTree;
+        store.replaceReducer(fromTree(newTree));
+        //setState(store.getState());
+      }
+    },
+    [store]
+  );
 
-  const assocReducer = (rPath, reducer) => {
-    if (path(rPath, reducersTree.current)) {
-      console.error('additional scope is required for: ', rPath);
-    } else {
-      const newTree = assocPath(rPath, reducer, reducersTree.current);
-      reducersTree.current = newTree;
-      store.replaceReducer(fromTree(newTree));
-      setContext({...context, state: store.getState()});
-    }
-  };
+  const dissocReducer = useCallback(
+    rPath => {
+      if (!path(rPath, reducersTree.current)) {
+        console.warning('additional scope is required for: ', rPath);
+      } else {
+        const newTree = dissocPath(rPath, reducersTree.current);
+        reducersTree.current = newTree;
+        store.replaceReducer(fromTree(newTree));
+        setContext({...context, state: store.getState()});
+      }
+    },
+    [store]
+  );
 
-  const dissocReducer = rPath => {
-    if (!path(rPath, reducersTree.current)) {
-      console.warning('additional scope is required for: ', rPath);
-    } else {
-      const newTree = dissocPath(rPath, reducersTree.current);
-      reducersTree.current = newTree;
-      store.replaceReducer(fromTree(newTree));
-      setContext({...context, state: store.getState()});
-    }
-  };
-
-  const state = store.getState();
+  const contextValue = useMemo(
+    () => ({
+      ...context,
+      assocReducer,
+      dissocReducer,
+      dispatch: store.dispatch,
+      getState: store.getState,
+      subscribe: store.subscribe,
+      runSaga,
+    }),
+    [runSaga, assocReducer, dissocReducer]
+  );
 
   return (
-    <KLogicContext.Provider
-      value={{
-        ...context,
-        assocReducer,
-        dissocReducer,
-        dispatch: store.dispatch,
-        state,
-        runSaga,
-      }}
-    >
+    <KLogicContext.Provider value={contextValue}>
       {children}
     </KLogicContext.Provider>
   );
