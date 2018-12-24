@@ -8,6 +8,7 @@ import sagaMiddleware from './sagaMiddleware';
 import bindActionCreators from './bindActionCreators';
 import Scope from './scope';
 import withScope from './withScope';
+import shallowEqual from './shallowEqual';
 import {KLogicContext, KLogicProvider} from './kLogicProvider';
 import {
   addIndex,
@@ -189,4 +190,5 @@ export {
   Scope,
   withScope,
   useSaga,
+  shallowEqual,
 };
