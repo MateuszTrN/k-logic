@@ -33,15 +33,6 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
     });
   };
 */
-/*
-const Array = withLogic({reducer: () => createReducer({}, [])})(
-  ({of, items, ...rest}) =>
-    mapWithKey(
-      (e, idx) => createElement(of, {...e, ...rest, key: idx, scope: idx}),
-      items
-    )
-);
-*/
 
 const studentReducer = createReducer(
   {
@@ -72,35 +63,6 @@ const Student = withScope(() => {
     </div>
   );
 });
-
-/*
-
-const StudentList = compose(
-  withLogic({
-    reducer: () =>
-      createReducer({itemCount: 0}, [
-        actionType2('INC', over(lensProp('itemCount'), add(1))),
-      ]),
-  }),
-  withHandlers({
-    onAddStudentClick: props => e => props.dispatch({type: 'INC'}),
-  })
-)(({children, itemCount, onAddStudentClick}) => (
-  <div>
-    <Array scope="items" of={Student} items={times(identity, itemCount)} />
-    <button onClick={onAddStudentClick} type="button">
-      Add
-    </button>
-  </div>
-));
-
-const Projects = () => (
-  <Scope scope="root.dupa">
-    <Student scope="student" />
-  </Scope>
-);
-
-*/
 
 const counterReducer = createReducer({counter: 0}, [
   actionType2('INC', over(lensProp('counter'), add(1))),
