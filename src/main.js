@@ -3,6 +3,8 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
+  useState,
+  useRef,
 } from 'react';
 import sagaMiddleware from './sagaMiddleware';
 import bindActionCreators from './bindActionCreators';
@@ -21,6 +23,7 @@ import {
   map,
   mapObjIndexed,
   merge,
+  pathOr,
   reduce,
   set,
 } from 'ramda';
@@ -134,9 +137,22 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
 const useKReducer = (reducer, actions) => {
   const context = useContext(KLogicContext);
 
+  const [state, setState] = useState(
+    pathOr({}, context.scope, context.getState())
+  );
+
+  const stateRef = useRef(state);
+
   useLayoutEffect(() => {
     const reducerPath = [...context.scope, '.'];
     context.assocReducer(reducerPath, reducer);
+    context.subscribe(() => {
+      const newState = pathOr({}, context.scope, context.getState());
+      if (newState !== stateRef.current) {
+        setState(newState);
+        stateRef.current = newState;
+      }
+    });
     return () => {
       context.dissocReducer(reducerPath);
     };
@@ -148,7 +164,7 @@ const useKReducer = (reducer, actions) => {
   return {
     ...bindActionCreators(actions, context.dispatch),
     ...initialState,
-    ...context.state,
+    ...state,
   };
 };
 
