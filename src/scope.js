@@ -1,18 +1,26 @@
 import React, {useContext, useMemo} from 'react';
 import {forwardTo} from 'k-reducer';
-import {pathOr} from 'ramda';
 import {KLogicContext} from './kLogicProvider';
 
 const Scope = ({scope, children}) => {
   const context = useContext(KLogicContext);
   const scopeArray = useMemo(() => scope.split('.'), [scope]);
-  const newScope = [...context.scope, ...scopeArray];
-  const newContext = {
-    ...context,
-    scope: newScope,
-    dispatch: forwardTo(context.dispatch, ...scopeArray),
-    state: pathOr({}, scopeArray, context.state),
-  };
+  const newScope = useMemo(() => [...context.scope, ...scopeArray], [
+    context.scope,
+    scopeArray,
+  ]);
+  const dispatch = useMemo(() => forwardTo(context.dispatch, ...scopeArray), [
+    scopeArray,
+    context.dispatch,
+  ]);
+  const newContext = useMemo(
+    () => ({
+      ...context,
+      scope: newScope,
+      dispatch,
+    }),
+    [newScope, dispatch]
+  );
 
   return (
     <KLogicContext.Provider value={newContext}>
