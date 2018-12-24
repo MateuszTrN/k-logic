@@ -1,6 +1,6 @@
-import React, {useEffect, createFactory, Component, Children} from 'react';
-import {add, addIndex, lensProp, map, over, assoc} from 'ramda';
-import {actionType2, createReducer, actionType, forwardTo} from 'k-reducer';
+import React, {Children} from 'react';
+import {add, addIndex, assoc, lensProp, map, over, take} from 'ramda';
+import {actionType, actionType2, createReducer} from 'k-reducer';
 import {delay} from 'redux-saga';
 import {put, takeEvery} from 'redux-saga/effects';
 import {
@@ -8,14 +8,16 @@ import {
   Scope,
   useAsync,
   useKReducer,
-  withScope,
   useSaga,
+  withScope,
 } from '../../../src/main';
 
 const mapWithKey = addIndex(map);
 
 const getGists = () =>
-  fetch('https://api.github.com/gists/public').then(r => r.json(), r => r);
+  fetch('https://api.github.com/gists/public')
+    .then(r => r.json(), r => r)
+    .then(take(5));
 /*
 const createSaga = ({start}) =>
   function*() {
