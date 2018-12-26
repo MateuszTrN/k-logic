@@ -146,7 +146,7 @@ const useKReducer = (reducer, actions) => {
   useLayoutEffect(() => {
     const reducerPath = [...context.scope, '.'];
     context.assocReducer(reducerPath, reducer);
-    context.subscribe(() => {
+    const unsubscribe = context.subscribe(() => {
       const newState = pathOr({}, context.scope, context.getState());
       if (newState !== stateRef.current) {
         setState(newState);
@@ -155,6 +155,7 @@ const useKReducer = (reducer, actions) => {
     });
     return () => {
       context.dissocReducer(reducerPath);
+      unsubscribe();
     };
   }, []);
 
