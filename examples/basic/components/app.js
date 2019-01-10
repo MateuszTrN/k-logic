@@ -1,5 +1,5 @@
 import React, {Children} from 'react';
-import {add, addIndex, assoc, lensProp, map, over, take} from 'ramda';
+import {add, addIndex, assoc, lensProp, map, over, take, always} from 'ramda';
 import {actionType, actionType2, createReducer} from 'k-reducer';
 import {delay} from 'redux-saga';
 import {put, takeEvery} from 'redux-saga/effects';
@@ -124,8 +124,38 @@ const Gists = withScope(() => {
   );
 });
 
+const LeftMenu = withScope(() => {
+  return (
+    <div>
+      {[1, 2, 3, 4, 5].map(e => (
+        <div key={e}>Item</div>
+      ))}
+    </div>
+  );
+});
+
+const inputActions = {
+  setField: e => ({type: 'SetField', payload: e.target.value}),
+};
+
+const inputReducer = createReducer('Jan', [(state, action) => state]);
+
+const Input = withScope(() => {
+  const {value, setField} = useKReducer(inputReducer, inputActions);
+  return <input value={value} onChange={setField} />;
+});
+
 const Projects4 = () => (
   <Scope scope="root">
+    <div style={{display: 'flex'}}>
+      <div style={{display: 'flex', width: '250px'}}>
+        <LeftMenu scope="leftMenu" />
+      </div>
+      <div style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
+        <div>Header</div>
+        <div>content</div>
+      </div>
+    </div>
     <ScopeList scope="counters">
       <Counter />
       <Counter />
@@ -135,6 +165,9 @@ const Projects4 = () => (
     <Scope scope="students">
       <Student scope="s1" />
       <Student scope="s2" />
+    </Scope>
+    <Scope scope="fields">
+      <Input scope="name" />
     </Scope>
   </Scope>
 );
