@@ -18,23 +18,6 @@ const getGists = () =>
   fetch('https://api.github.com/gists/public')
     .then(r => r.json(), r => r)
     .then(take(5));
-/*
-const createSaga = ({start}) =>
-  function*() {
-    yield fork(start);
-  };
-
-const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
-  function*() {
-    yield takeEvery(actions, function*() {
-      yield* asyncAction({
-        baseType: resourceKey,
-        fn,
-        args: [],
-      });
-    });
-  };
-*/
 
 const studentReducer = createReducer(
   {
