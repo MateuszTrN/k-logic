@@ -16,7 +16,7 @@
   },
   "peerDependencies": {
     "k-reducer": "^0.2.7",
-    "react": "^16.7.0-alpha"
+    "react": "^16.8.0-alpha"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
@@ -42,8 +42,8 @@
     "k-reducer": "^0.2.7",
     "prettier": "^1.14.3",
     "prop-types": "^15.6.2",
-    "react": "^16.7.0-alpha",
-    "react-dom": "^16.7.0-alpha",
+    "react": "^16.8.0-alpha",
+    "react-dom": "^16.8.0-alpha",
     "redux-actions": "^2.6.1",
     "redux-saga": "^0.16.2",
     "rimraf": "^2.6.2",
