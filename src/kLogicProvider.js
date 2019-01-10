@@ -44,6 +44,8 @@ function KLogicProvider({store, runSaga, staticReducer, children}) {
 
   const dissocReducer = useCallback(
     rPath => {
+      console.log('dissocReducer');
+      /*
       if (!path(rPath, reducersTree.current)) {
         console.warning('additional scope is required for: ', rPath);
       } else {
@@ -52,6 +54,7 @@ function KLogicProvider({store, runSaga, staticReducer, children}) {
         store.replaceReducer(fromTree(newTree));
         setContext({...context, state: store.getState()});
       }
+      */
     },
     [store]
   );
