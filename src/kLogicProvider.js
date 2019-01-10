@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {assocPath, dissocPath, path} from 'ramda';
-import {fromTree} from 'k-reducer';
+import {fromTree, composeReducers} from 'k-reducer';
 
 const defaultContextValue = {
   scope: [],
@@ -20,7 +20,7 @@ const defaultContextValue = {
 
 const KLogicContext = createContext(defaultContextValue);
 
-function KLogicProvider({store, runSaga, children}) {
+function KLogicProvider({store, runSaga, staticReducer, children}) {
   const [context, setContext] = useState(defaultContextValue);
   const reducersTree = useRef({});
 
@@ -31,7 +31,11 @@ function KLogicProvider({store, runSaga, children}) {
       } else {
         const newTree = assocPath(rPath, reducer, reducersTree.current);
         reducersTree.current = newTree;
-        store.replaceReducer(fromTree(newTree));
+        const treeReducer = fromTree(newTree);
+        const finalReducer = staticReducer
+          ? composeReducers(staticReducer, treeReducer)
+          : treeReducer;
+        store.replaceReducer(finalReducer);
         //setState(store.getState());
       }
     },

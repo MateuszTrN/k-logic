@@ -26,6 +26,9 @@ import {
   pathOr,
   reduce,
   set,
+  unless,
+  is,
+  objOf,
 } from 'ramda';
 import {call, put, takeEvery} from 'redux-saga/effects';
 
@@ -134,6 +137,8 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
     });
   };
 
+const ensureObject = unless(is(Object), objOf('value'));
+
 const useKReducer = (reducer, actions) => {
   const context = useContext(KLogicContext);
 
@@ -164,8 +169,7 @@ const useKReducer = (reducer, actions) => {
 
   return {
     ...bindActionCreators(actions, context.dispatch),
-    ...initialState,
-    ...state,
+    ...merge(initialState, state),
   };
 };
 
