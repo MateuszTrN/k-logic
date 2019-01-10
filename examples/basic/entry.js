@@ -17,9 +17,16 @@ const store = createStore(
   composeEnhancers(applyMiddleware(sagaMiddleware))
 );
 
+const rootReducer = (state = {xxx: 'test'}, action) =>
+  action.type === 'Hopla' ? {...state, xxx: action.payload} : state;
+
 const run = (containerDomId, View) => {
   render(
-    <KLogicProvider store={store} runSaga={sagaMiddleware.run}>
+    <KLogicProvider
+      store={store}
+      runSaga={sagaMiddleware.run}
+      staticReducer={rootReducer}
+    >
       <View />
     </KLogicProvider>,
     document.getElementById(containerDomId)
