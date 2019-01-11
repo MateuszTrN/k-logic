@@ -12,12 +12,8 @@ export default [
         external: [
             'ramda',
             'react',
-            'reselect',
             'k-reducer',
-            'redux',
-            'recompose',
             'redux-actions',
-            'path-parser',
             'react-redux',
             'prop-types',
             'redux-saga',
