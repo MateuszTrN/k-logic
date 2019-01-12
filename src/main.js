@@ -22,7 +22,7 @@ import {
   lensProp,
   map,
   mapObjIndexed,
-  merge,
+  mergeRight,
   pathOr,
   reduce,
   set,
@@ -85,16 +85,20 @@ const buildModelLenses = (modelDef, options) => {
   );
 };
 
-const initModelField = (fieldLens, target) =>
+const initModelField = (fieldLens, defaultValue, target) =>
   compose(
-    set(fieldLens.result, null),
+    set(fieldLens.result, defaultValue),
     set(fieldLens.pending, false),
     set(fieldLens.error, null)
   )(target);
 
 const initModel = (modelDef, modelLenses, target) =>
   reduce(
-    (a, c) => merge(a, initModelField(modelLenses[c], a)),
+    (a, c) =>
+      mergeRight(
+        a,
+        initModelField(modelLenses[c], modelDef[c].defaultValue || null, a)
+      ),
     target,
     keys(modelDef)
   );
