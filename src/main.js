@@ -12,6 +12,7 @@ import Scope from './scope';
 import withScope from './withScope';
 import withDebug from './withDebug';
 import shallowEqual from './shallowEqual';
+import useKReducer from './useKReducer';
 import {KLogicContext, KLogicProvider} from './kLogicProvider';
 import {
   addIndex,
@@ -142,40 +143,6 @@ const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
   };
 
 const ensureObject = unless(is(Object), objOf('value'));
-
-const useKReducer = (reducer, actions) => {
-  const context = useContext(KLogicContext);
-
-  const [state, setState] = useState(
-    pathOr({}, context.scope, context.getState())
-  );
-
-  const stateRef = useRef(state);
-
-  useLayoutEffect(() => {
-    const reducerPath = [...context.scope, '.'];
-    context.assocReducer(reducerPath, reducer);
-    const unsubscribe = context.subscribe(() => {
-      const newState = pathOr({}, context.scope, context.getState());
-      if (newState !== stateRef.current) {
-        setState(newState);
-        stateRef.current = newState;
-      }
-    });
-    return () => {
-      context.dissocReducer(reducerPath);
-      unsubscribe();
-    };
-  }, []);
-
-  //TODO: performance
-  const initialState = reducer(undefined, {type: '@@INIT'});
-
-  return {
-    ...bindActionCreators(actions, context.dispatch),
-    ...merge(initialState, state),
-  };
-};
 
 const asyncAction2 = async (fn, key, dispatch) => {
   try {
