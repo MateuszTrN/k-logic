@@ -24,7 +24,7 @@ import {
   map,
   mapObjIndexed,
   mergeRight,
-  pathOr,
+  identity,
   reduce,
   set,
   unless,
@@ -116,14 +116,18 @@ const handleAsyncs = (modelDef, options = {}) => {
     if (match) {
       const resource = match[1];
       const stage = match[2];
+
+      const resultTransform = modelDef[resource].resultTransform || identity;
+      const errorTransform = modelDef[resource].errorTransform || identity;
+
       if (stage === 'Request') {
         return set(modelLenses[resource].pending, true, model);
       } else if (stage === 'Succeeded') {
         const m1 = set(modelLenses[resource].pending, false, model);
-        return set(modelLenses[resource].result, payload, m1);
+        return set(modelLenses[resource].result, resultTransform(payload), m1);
       } else if (stage === 'Failed') {
         const m1 = set(modelLenses[resource].pending, false, model);
-        return set(modelLenses[resource].error, payload, m1);
+        return set(modelLenses[resource].error, errorTransform(payload), m1);
       }
     }
 
