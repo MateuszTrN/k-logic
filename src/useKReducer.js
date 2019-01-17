@@ -1,6 +1,6 @@
 import {useContext, useLayoutEffect, useRef, useState, useMemo} from 'react';
 import {KLogicContext} from './kLogicProvider';
-import {mergeRight, pathOr} from 'ramda';
+import {mergeDeepRight, pathOr} from 'ramda';
 import bindActionCreators from './bindActionCreators';
 
 const emptyObject = {};
@@ -37,9 +37,10 @@ const useKReducer = (reducer, actions) => {
     [actions, context.dispatch]
   );
 
-  const finalState = isFirstRender.current
-    ? mergeRight(reducer(undefined, {type: '@@INIT'}), state)
-    : state;
+  const finalState = mergeDeepRight(
+    reducer(undefined, {type: '@@INIT'}),
+    state
+  );
 
   if (isFirstRender.current) {
     isFirstRender.current = false;
