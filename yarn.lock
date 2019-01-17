@@ -3828,10 +3828,10 @@ just-curry-it@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/just-curry-it/-/just-curry-it-3.1.0.tgz#ab59daed308a58b847ada166edd0a2d40766fbc5"
 
-k-reducer@^0.2.8:
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/k-reducer/-/k-reducer-0.2.8.tgz#4c200e6982485153a3601a8d7ca52c20b54e1c91"
-  integrity sha512-uZvKwTMCxKsw6LfFQrZ/tpQJlrp2JCL3W4Ml2lzA1wOwOVaI99lMFragEqy5tLp0ZknQurHlD57oi1pW+peFfQ==
+k-reducer@^0.2.9:
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/k-reducer/-/k-reducer-0.2.9.tgz#5252445b2e7adf165c82119deade0814a090281f"
+  integrity sha512-O13Hl6fveqdU3/AHuSV4MtHSJE6gq8k/Fb1Les7Ieb65ywBqxfjq7yZ57Qn5XGi3CJviLUmCTcbfJQcLwLswIQ==
 
 killable@^1.0.0:
   version "1.0.1"
