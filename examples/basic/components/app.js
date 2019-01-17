@@ -2,7 +2,7 @@ import React, {Children} from 'react';
 import {add, addIndex, assoc, lensProp, map, over, take, always} from 'ramda';
 import {actionType, actionType2, createReducer} from 'k-reducer';
 import {delay} from 'redux-saga';
-import {put, takeEvery} from 'redux-saga/effects';
+import {put, select, takeEvery} from 'redux-saga/effects';
 import {
   handleAsyncs,
   Scope,
@@ -81,13 +81,16 @@ const ScopeList = ({scope, children}) => {
   );
 };
 
-const gistsReducer = createReducer({}, [
+const gistsReducer = createReducer({name: 'John'}, [
   handleAsyncs({
     gists: {},
   }),
 ]);
 
 const gistsSaga = function*() {
+  const name = yield select(m => m.name);
+  console.log('name', name);
+
   yield takeEvery('ping', function*() {
     for (let i = 0; i < 5; i++) {
       yield delay(1000);
