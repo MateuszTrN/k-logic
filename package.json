@@ -33,7 +33,7 @@
     "glob": "^7.1.3",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^23.6.0",
-    "k-reducer": "^0.2.9",
+    "k-reducer": "^0.2.10",
     "prettier": "^1.14.3",
     "prop-types": "^15.6.2",
     "ramda": "^0.26.1",
