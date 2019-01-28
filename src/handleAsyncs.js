@@ -11,6 +11,8 @@ import {
   uncurryN,
 } from 'ramda';
 
+const asyncActionRegexp = new RegExp(`^Async/(.+)/(.+)$`);
+
 const getStageLens = (modelDef, resource, stage, dataProp) => {
   const defaultLens = compose(
     lensProp(dataProp),

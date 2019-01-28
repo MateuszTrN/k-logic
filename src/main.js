@@ -27,8 +27,6 @@ const requestAction = createAsyncAction('Request');
 const succeededAction = createAsyncAction('Succeeded');
 const failedAction = createAsyncAction('Failed');
 
-const asyncActionRegexp = new RegExp(`^Async/(.+)/(.+)$`);
-
 function* asyncAction({baseType, fn, args}) {
   try {
     yield put(requestAction(baseType));
