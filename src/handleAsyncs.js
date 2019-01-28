@@ -8,6 +8,7 @@ import {
   mergeRight,
   reduce,
   set,
+  uncurryN,
 } from 'ramda';
 
 const getStageLens = (modelDef, resource, stage, dataProp) => {
@@ -79,14 +80,14 @@ const handleAsyncs = (modelDef, options = {}) => {
         const m1 = set(modelLenses[resource].pending, false, model);
         return set(
           modelLenses[resource].result,
-          resultTransform(payload, model),
+          uncurryN(2, resultTransform)(payload, model),
           m1
         );
       } else if (stage === 'Failed') {
         const m1 = set(modelLenses[resource].pending, false, model);
         return set(
           modelLenses[resource].error,
-          errorTransform(payload, model),
+          uncurryN(2, errorTransform)(payload, model),
           m1
         );
       }
