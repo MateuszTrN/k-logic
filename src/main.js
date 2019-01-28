@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-  useRef,
-} from 'react';
+import React, {useCallback, useContext, useEffect} from 'react';
 import sagaMiddleware from './sagaMiddleware';
 import bindActionCreators from './bindActionCreators';
 import Scope from './scope';
@@ -13,27 +6,10 @@ import withScope from './withScope';
 import withDebug from './withDebug';
 import shallowEqual from './shallowEqual';
 import useKReducer from './useKReducer';
+import handleAsyncs from './handleAsyncs';
 import {KLogicContext, KLogicProvider} from './kLogicProvider';
-import {
-  addIndex,
-  compose,
-  curry,
-  keys,
-  lensPath,
-  lensProp,
-  map,
-  mapObjIndexed,
-  mergeRight,
-  identity,
-  reduce,
-  set,
-  unless,
-  is,
-  objOf,
-} from 'ramda';
+import {curry, unless, is, objOf} from 'ramda';
 import {call, put, takeEvery} from 'redux-saga/effects';
-
-const mapWithKey = addIndex(map);
 
 const asyncActionTypeName = curry(
   (stage, baseType) => `Async/${baseType}/${stage}`
@@ -63,77 +39,6 @@ function* asyncAction({baseType, fn, args}) {
     yield put(failedAction(baseType, e));
   }
 }
-
-const getStageLens = (modelDef, resource, stage, dataProp) => {
-  const defaultLens = compose(
-    lensProp(dataProp),
-    lensPath([resource, stage])
-  );
-  return modelDef[resource] && modelDef[resource][stage]
-    ? modelDef[resource][stage]
-    : defaultLens;
-};
-
-const buildModelLenses = (modelDef, options) => {
-  const dataProp = options.dataProp || 'data';
-  return mapObjIndexed(
-    (def, resource) => ({
-      pending: getStageLens(modelDef, resource, 'pending', dataProp),
-      result: getStageLens(modelDef, resource, 'result', dataProp),
-      error: getStageLens(modelDef, resource, 'error', dataProp),
-    }),
-    modelDef
-  );
-};
-
-const initModelField = (fieldLens, defaultValue, target) =>
-  compose(
-    set(fieldLens.result, defaultValue),
-    set(fieldLens.pending, false),
-    set(fieldLens.error, null)
-  )(target);
-
-const initModel = (modelDef, modelLenses, target) =>
-  reduce(
-    (a, c) =>
-      mergeRight(
-        a,
-        initModelField(modelLenses[c], modelDef[c].defaultValue || null, a)
-      ),
-    target,
-    keys(modelDef)
-  );
-
-const handleAsyncs = (modelDef, options = {}) => {
-  const modelLenses = buildModelLenses(modelDef, options);
-
-  return (model, {type, payload}) => {
-    if (type === '@@INIT') {
-      return initModel(modelDef, modelLenses, model);
-    }
-
-    const match = type.match(asyncActionRegexp);
-    if (match) {
-      const resource = match[1];
-      const stage = match[2];
-
-      const resultTransform = modelDef[resource].resultTransform || identity;
-      const errorTransform = modelDef[resource].errorTransform || identity;
-
-      if (stage === 'Request') {
-        return set(modelLenses[resource].pending, true, model);
-      } else if (stage === 'Succeeded') {
-        const m1 = set(modelLenses[resource].pending, false, model);
-        return set(modelLenses[resource].result, resultTransform(payload), m1);
-      } else if (stage === 'Failed') {
-        const m1 = set(modelLenses[resource].pending, false, model);
-        return set(modelLenses[resource].error, errorTransform(payload), m1);
-      }
-    }
-
-    return model;
-  };
-};
 
 const fetchOnEvery = ({actions, resourceKey, fn, argsSelector}) =>
   function*() {
