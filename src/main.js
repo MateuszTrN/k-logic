@@ -70,12 +70,12 @@ const useAsync = (fn, key) => {
   }, []);
 };
 
-const useSaga = saga => {
+const useSaga = (saga, args = [], dependencies = []) => {
   const context = useContext(KLogicContext);
 
   return useEffect(() => {
-    context.runSaga(context.scope.join('.'), saga);
-  }, []);
+    context.runSaga(context.scope.join('.'), saga, ...args);
+  }, dependencies);
 };
 
 export {
