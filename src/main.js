@@ -7,6 +7,7 @@ import withDebug from './withDebug';
 import shallowEqual from './shallowEqual';
 import useKReducer from './useKReducer';
 import handleAsyncs from './handleAsyncs';
+import useSagaRunner from './useSagaRunner';
 import {KLogicContext, KLogicProvider} from './kLogicProvider';
 import {curry, unless, is, objOf} from 'ramda';
 import {call, put, takeEvery} from 'redux-saga/effects';
@@ -93,4 +94,5 @@ export {
   useSaga,
   shallowEqual,
   bindActionCreators,
+  useSagaRunner,
 };
