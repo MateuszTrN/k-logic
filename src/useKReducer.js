@@ -2,6 +2,7 @@ import {useContext, useLayoutEffect, useRef, useState, useMemo} from 'react';
 import {KLogicContext} from './kLogicProvider';
 import {mergeDeepRight, pathOr} from 'ramda';
 import bindActionCreators from './bindActionCreators';
+import shallowEqual from './shallowEqual';
 
 const emptyObject = {};
 
@@ -20,7 +21,7 @@ const useKReducer = (reducer, actions) => {
     context.assocReducer(reducerPath, reducer);
     const tryUpdateState = () => {
       const newState = pathOr(emptyObject, context.scope, context.getState());
-      if (newState !== stateRef.current) {
+      if (!shallowEqual(newState, stateRef.current)) {
         setState(newState);
         stateRef.current = newState;
       }
