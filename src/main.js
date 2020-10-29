@@ -6,6 +6,7 @@ import withScope from './withScope';
 import withDebug from './withDebug';
 import shallowEqual from './shallowEqual';
 import useKReducer from './useKReducer';
+import useKState from './useKState';
 import handleAsyncs from './handleAsyncs';
 import useSagaRunner from './useSagaRunner';
 import {KLogicContext, KLogicProvider} from './kLogicProvider';
@@ -87,6 +88,7 @@ export {
   KLogicProvider,
   KLogicContext,
   useKReducer,
+  useKState,
   useAsync,
   Scope,
   withScope,

@@ -1,4 +1,4 @@
-import React, {Children} from 'react';
+import React, {Children, useCallback} from 'react';
 import {add, addIndex, assoc, lensProp, map, over, take, always} from 'ramda';
 import {actionType, actionType2, createReducer} from 'k-reducer';
 import {delay} from 'redux-saga';
@@ -8,6 +8,7 @@ import {
   Scope,
   useAsync,
   useKReducer,
+  useKState,
   useSaga,
   withScope,
 } from '../../../src/main';
@@ -148,6 +149,96 @@ const Input = withScope(() => {
   return <input value={value} onChange={setField} />;
 });
 
+const NestedComponent = withScope(() => {
+  const [option, setOption] = useKState('option', 3);
+  const [someText, setSomeText] = useKState('go go power rangers');
+  const handleSetOption = useCallback(e => setOption(e.target.value), []);
+  const handleSetSomeText = useCallback(e => setSomeText(e.target.value), []);
+  return (
+    <table>
+      <tbody>
+        <tr>
+          <td>Only initValue provided in nested scope</td>
+          <td>
+            <input value={someText} onChange={handleSetSomeText} />
+          </td>
+        </tr>
+        <tr>
+          <td>Only initValue provided in nested scope</td>
+          <td>
+            <select value={option} onChange={handleSetOption}>
+              <option value={1}>One</option>
+              <option value={2}>Two</option>
+              <option value={3}>Three</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+});
+
+const TestComponent = withScope(() => {
+  const [first, setFirst] = useKState('firstState', 'some text');
+  const [second, setSecond] = useKState('secondState', 'other text');
+  const [third, setThird] = useKState('other');
+  const [fourth, setFourth] = useKState('fourth');
+  const [value, setField] = useKState('value');
+  //const {value, setField} = useKReducer(inputReducer, inputActions);
+
+  const handleFirst = useCallback(e => setFirst(e.target.value), []);
+  const handleSecond = useCallback(e => setSecond(e.target.value), []);
+  const handleThird = useCallback(e => setThird(e.target.value), []);
+  const handleFourth = useCallback(e => setFourth(e.target.value), []);
+
+  return (
+    <div>
+      <h3>useKState Examples</h3>
+      <table>
+        <tbody>
+          <tr>
+            <td> key and init value provided:</td>
+            <td>
+              <input value={first} onChange={handleFirst} />{' '}
+            </td>
+          </tr>
+          <tr>
+            <td>key and init value provided:</td>
+            <td>
+              <input value={second} onChange={handleSecond} />
+            </td>
+          </tr>
+          <tr>
+            <td>only init value provided:</td>
+            <td>
+              <input value={third} onChange={handleThird} />
+            </td>
+          </tr>
+
+          <tr>
+            <td>only init value provided:</td>
+            <td>
+              <input value={fourth} onChange={handleFourth} />
+            </td>
+          </tr>
+          <tr>
+            <td>A regular useKReducer usages: </td>
+            <td>
+              <input value={value} onChange={setField} />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <NestedComponent scope="netedState" />
+    </div>
+  );
+});
+
+const SingleStateComponent = withScope(() => {
+  const [value, setValue] = useKState('simple');
+  return <input value={value} onChange={e => setValue(e.target.value)} />;
+});
+
 const Projects4 = () => (
   <Scope scope="root">
     <div style={{display: 'flex'}}>
@@ -171,6 +262,10 @@ const Projects4 = () => (
     </Scope>
     <Scope scope="fields">
       <Input scope="name" />
+    </Scope>
+    <Scope scope={'kStateExample'}>
+      <SingleStateComponent scope={'singleStateExample'} />
+      <TestComponent scope={'multipleStateExample'} />
     </Scope>
   </Scope>
 );
